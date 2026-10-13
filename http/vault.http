@@ -1,0 +1,30 @@
+@host = http://127.0.0.1:8200
+@token = 00000000-0000-0000-0000-000000000000
+
+### Enable AppRole
+// @no-cookie-jar
+POST {{host}}/v1/sys/auth/approle
+X-Vault-Token: {{token}}
+Content-Type: application/json
+
+{"type": "approle"}
+
+### Create AppRole
+// @no-cookie-jar
+POST {{host}}/v1/auth/approle/role/my-role
+X-Vault-Token: {{token}}
+Content-Type: application/json
+
+{"policies": "dev-policy,test-policy", "token_type": "batch"}
+
+### GET role_id
+// @no-cookie-jar
+GET {{host}}/v1/auth/approle/role/my-role/role-id
+X-Vault-Token: {{token}}
+
+### GET secret_id
+// @no-cookie-jar
+POST {{host}}/v1/auth/approle/role/my-role/secret-id
+X-Vault-Token: {{token}}
+
+###

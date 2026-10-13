@@ -1,0 +1,16 @@
+package com.example.demo.vault
+
+import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.boot.jooq.autoconfigure.JooqProperties
+import org.springframework.boot.runApplication
+
+@SpringBootApplication
+@EnableConfigurationProperties(JooqProperties::class)
+class DemoVaultApplication
+
+fun main(args: Array<String>) {
+	System.setProperty("org.jooq.no-logo", "true")
+	System.setProperty("org.jooq.no-tips", "true")
+	runApplication<DemoVaultApplication>(*args)
+}

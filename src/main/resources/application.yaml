@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: demo-vault
+  cloud:
+    vault:
+#      authentication: token
+#      token: 00000000-0000-0000-0000-000000000000
+      authentication: approle
+      app-role:
+        role-id: 4116bb89-7aa5-e4fa-5f5e-17bf45324bad
+        secret-id: d1e3e37f-9eef-9138-b11c-21a64542e920
+      scheme: http
+      uri: http://localhost:8200
+      kv:
+        enabled: false
+  config:
+    import:
+      - vault://
+  jooq:
+    sql-dialect: postgres
+#  datasource:
+#    url: jdbc:postgresql://localhost:5432/pgdb
+#    username: pguser
+#    password: pgpass
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/pgdb
+    username: pguser
+#    password: pgpass
+  threads:
+    virtual:
+      enabled: true

@@ -1,0 +1,19 @@
+services:
+
+  vault:
+    container_name: demo-vault
+    image: hashicorp/vault:2.1
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: "00000000-0000-0000-0000-000000000000"
+    ports:
+      - "8200:8200"
+
+  postgres:
+    image: postgres:18-alpine
+    container_name: demo_postgres
+    environment:
+      POSTGRES_USER: pguser
+      POSTGRES_PASSWORD: pgpass
+      POSTGRES_DB: pgdb
+    ports:
+      - "5432:5432"
