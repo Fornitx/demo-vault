@@ -23,31 +23,21 @@ management:
 spring:
   application:
     name: demo-vault
-  cloud:
-    vault:
-      uri: http://localhost:8200
-      scheme: http
-      fail-fast: true
-
-      authentication: token
-      token: 00000000-0000-0000-0000-000000000000
-#      authentication: approle
-#      app-role:
-#        role-id: 4116bb89-7aa5-e4fa-5f5e-17bf45324bad
-#        secret-id: d1e3e37f-9eef-9138-b11c-21a64542e920
-
-      kv:
-        enabled: true
-        backend: secret
-
-      config:
-        lifecycle:
-          enabled: true
-          min-renewal: 10s
-          expiry-threshold: 30s
-  config:
-    import:
-      - vault://secret/myapp
+#  cloud:
+#    vault:
+#      uri: http://localhost:8200
+#      scheme: http
+#      fail-fast: true
+#
+#      authentication: token
+#      token: 00000000-0000-0000-0000-000000000000
+#
+#      kv:
+#        enabled: true
+#        backend: secret
+#  config:
+#    import:
+#      - vault://secret/myapp
   jooq:
     sql-dialect: postgres
 #  datasource:
@@ -55,11 +45,15 @@ spring:
 #    username: pguser
 #    password: pgpass
   r2dbc:
-    url: r2dbc:postgresql://localhost:5432/pgdb
-#    pool:
-#      validation-query: select 1
-  #    username: pguser
-#    password: pgpass
+    url: r2dbc:postgresql:failover://localhost:5432,localhost:5433/pgdb
+    pool:
+      validation-query: select 1
+      initial-size: 2
+      max-size: 10
+      max-idle-time: 1m
+      max-life-time: 10m
+    username: pguser
+    password: pgpass
   threads:
     virtual:
       enabled: true
@@ -68,3 +62,8 @@ logging:
   pattern:
     dateformat: HH:mm:ss.SSS
 
+vault:
+  enabled: true
+  url: http://localhost:8200
+  token: 00000000-0000-0000-0000-000000000000
+  path: secret/data/myapp

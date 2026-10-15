@@ -1,4 +1,4 @@
-package com.example.demo.vault.rest.controllers
+package com.example.demo.vault.controllers
 
 import com.example.demo.vault.services.DemoService
 import io.github.oshai.kotlinlogging.KotlinLogging

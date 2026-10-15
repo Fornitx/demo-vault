@@ -3,8 +3,12 @@
 ------------------------------
 ## Вариант 1: Использование Supplier или Publisher в конфигурации
 Этот подход универсален и работает независимо от фреймворка. Драйвер будет вызывать метод get() у Supplier или подписываться на Publisher каждый раз, когда пулу соединений требуется создать новое физическое подключение к PostgreSQL.
-
-import io.r2dbc.postgresql.PostgresqlConnectionConfiguration;import io.r2dbc.postgresql.PostgresqlConnectionFactory;import io.r2dbc.spi.ConnectionFactory;import reactor.core.publisher.Mono;import java.util.function.Supplier;
+```java
+import io.r2dbc.postgresql.PostgresqlConnectionConfiguration;
+import io.r2dbc.postgresql.PostgresqlConnectionFactory;
+import io.r2dbc.spi.ConnectionFactory;
+import reactor.core.publisher.Mono;
+import java.util.function.Supplier;
 public class R2dbcConfig {
 
     public ConnectionFactory connectionFactory() {
@@ -35,15 +39,23 @@ public class R2dbcConfig {
         return "dynamic-rotated-password";
     }
 }
-
+```
 ------------------------------
 ## Вариант 2: Интеграция с Spring Boot и Spring Data R2DBC
 Если вы используете Spring Boot, автоматическая конфигурация ожидает фиксированную строку. Чтобы заставить пул (R2dbcPool) перевыпускать соединения с новым паролем без перезапуска приложения, нужно переопределить создание бина ConnectionFactory.
 ## 1. Создаем кастомный ConnectionFactory с реактивной ротацией
 Компонент, отвечающий за поставку учетных данных (например, интегрированный с Vault или обновляемый по расписанию):
-
-import io.r2dbc.postgresql.PostgresqlConnectionConfiguration;import io.r2dbc.postgresql.PostgresqlConnectionFactory;import io.r2dbc.pool.ConnectionPool;import io.r2dbc.pool.ConnectionPoolConfiguration;import io.r2dbc.spi.ConnectionFactory;import org.springframework.context.annotation.Bean;import org.springframework.context.annotation.Configuration;import reactor.core.publisher.Mono;
-import java.time.Duration;import java.util.concurrent.atomic.AtomicReference;
+```java
+import io.r2dbc.postgresql.PostgresqlConnectionConfiguration;
+import io.r2dbc.postgresql.PostgresqlConnectionFactory;
+import io.r2dbc.pool.ConnectionPool;
+import io.r2dbc.pool.ConnectionPoolConfiguration;
+import io.r2dbc.spi.ConnectionFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import reactor.core.publisher.Mono;
+import java.time.Duration;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Configurationpublic class DatabaseConfiguration {
 
@@ -82,11 +94,11 @@ import java.time.Duration;import java.util.concurrent.atomic.AtomicReference;
         this.cachedPassword.set(newPassword);
     }
 }
-
+```
 ## 2. Как заставить пул мгновенно сбросить старые соединения?
 Если ротация произошла на стороне СУБД, старые соединения в пуле (которые все еще используют старый пароль) начнут выдавать ошибки аутентификации при проверке (validation) или выполнении запросов.
 Чтобы избежать этого, после вызова updatePassword(newPassword) рекомендуется принудительно очистить пул:
-
+```java
 import io.r2dbc.pool.ConnectionPool;import io.r2dbc.spi.ConnectionFactory;import org.springframework.stereotype.Service;
 
 @Servicepublic class CredentialRotationService {
@@ -111,7 +123,7 @@ import io.r2dbc.pool.ConnectionPool;import io.r2dbc.spi.ConnectionFactory;import
         }
     }
 }
-
+```
 ## Важные нюансы при работе с пулами:
 
 1. Жизненный цикл соединений (maxLifeTime): Обязательно настраивайте параметры вытеснения в пуле. Соединения, созданные со старым паролем, остаются валидными в PostgreSQL до тех пор, пока они открыты. Ротация влияет только на новые физические сессии.
