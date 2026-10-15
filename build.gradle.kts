@@ -21,11 +21,12 @@ extra["springCloudVersion"] = "2025.1.3"
 dependencies {
 	implementation("org.springframework.cloud:spring-cloud-starter-vault-config")
 
-//	implementation("org.springframework.boot:spring-boot-starter-actuator")
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-jooq")
 	implementation("org.springframework.boot:spring-boot-starter-r2dbc")
 //	implementation("org.springframework.boot:spring-boot-starter-validation")
 //	implementation("org.springframework.boot:spring-boot-starter-webmvc")
+	implementation("org.springframework.boot:spring-boot-starter-webclient")
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
 
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -34,15 +35,17 @@ dependencies {
 
 	implementation(libs.kotlin.logging)
 	implementation(libs.scoped.mdc)
+	implementation("io.r2dbc:r2dbc-pool")
 
 //	runtimeOnly("org.postgresql:postgresql")
 	runtimeOnly("org.postgresql:r2dbc-postgresql")
 
-//	testImplementation("org.springframework.boot:spring-boot-starter-actuator-test")
+	testImplementation("org.springframework.boot:spring-boot-starter-actuator-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-jooq-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-r2dbc-test")
 //	testImplementation("org.springframework.boot:spring-boot-starter-validation-test")
 //	testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+	testImplementation("org.springframework.boot:spring-boot-starter-webclient-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-webflux-test")
 
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")

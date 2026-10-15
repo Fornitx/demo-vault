@@ -1,0 +1,48 @@
+@host = http://127.0.0.1:8200
+@token = 00000000-0000-0000-0000-000000000000
+
+### Get Engines
+GET {{host}}/v1/sys/mounts
+X-Vault-Token: {{token}}
+
+### Get data
+GET {{host}}/v1/secret/data/myapp
+X-Vault-Token: {{token}}
+
+### Put data
+POST {{host}}/v1/secret/data/myapp
+X-Vault-Token: {{token}}
+Content-Type: application/json
+
+{"data": {"password": "p@ssw0rd!"}}
+
+### List data
+GET {{host}}/v1/secret/metadata?list=true
+X-Vault-Token: {{token}}
+
+### Delete version
+POST {{host}}/v1/secret/delete/myapp
+X-Vault-Token: {{token}}
+Content-Type: application/json
+
+{"versions":  [2]}
+
+### Restore version
+POST {{host}}/v1/secret/undelete/myapp
+X-Vault-Token: {{token}}
+Content-Type: application/json
+
+{"versions":  [1]}
+
+### Destroy version
+POST {{host}}/v1/secret/destroy/myapp
+X-Vault-Token: {{token}}
+Content-Type: application/json
+
+{"versions":  [2]}
+
+### Delete secret
+DELETE {{host}}/v1/secret/metadata/myapp
+X-Vault-Token: {{token}}
+
+###
