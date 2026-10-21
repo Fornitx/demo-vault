@@ -27,6 +27,31 @@ spring:
       max-size: 5
       max-idle-time: 1m
       max-life-time: 10m
+  quartz:
+    auto-startup: true
+    job-store-type: jdbc
+    jdbc:
+      initialize-schema: always
+    overwrite-existing-jobs: true
+    properties:
+      org.quartz:
+        dataSource:
+          quartzDataSource:
+            driver: org.postgresql.Driver
+#            URL: jdbc:postgresql://localhost:5432,localhost:5433/pgdb
+            URL: jdbc:postgresql://localhost:5432/pgdb
+            maxConnections: 4
+            provider: hikaricp
+        jobStore:
+          class: org.quartz.impl.jdbcjobstore.JobStoreTX
+          driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+#          isClustered: true
+          dataSource: quartzDataSource
+        scheduler:
+          instanceId: AUTO
+          instanceName: Demo
+        threadPool:
+          threadCount: 1
   task.scheduling.pool.size: 5
   threads.virtual.enabled: true
 
@@ -40,3 +65,5 @@ vault:
   url: http://localhost:8200
   token: 00000000-0000-0000-0000-000000000000
   path: secret/data/myapp
+
+debug: true

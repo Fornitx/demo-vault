@@ -21,6 +21,7 @@ dependencies {
 
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-jooq")
+	implementation("org.springframework.boot:spring-boot-starter-quartz")
 	implementation("org.springframework.boot:spring-boot-starter-r2dbc")
 //	implementation("org.springframework.boot:spring-boot-starter-validation")
 //	implementation("org.springframework.boot:spring-boot-starter-webmvc")
@@ -32,10 +33,12 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-slf4j")
+
+	implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
 	implementation("tools.jackson.module:jackson-module-kotlin")
 
 	implementation(libs.kotlin.logging)
-	implementation(libs.scoped.mdc)
+//	implementation(libs.scoped.mdc)
 
 	runtimeOnly("io.micrometer:micrometer-registry-prometheus")
 	runtimeOnly("org.postgresql:postgresql")
@@ -44,6 +47,7 @@ dependencies {
 
 	testImplementation("org.springframework.boot:spring-boot-starter-actuator-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-jooq-test")
+	testImplementation("org.springframework.boot:spring-boot-starter-quartz-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-r2dbc-test")
 //	testImplementation("org.springframework.boot:spring-boot-starter-validation-test")
 //	testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")

@@ -1,14 +1,10 @@
 [versions]
-kotlin-logging = "8.0.4"
-
 spring-cloud = "2025.1.3"
 
-scoped-mdc = "1.0.0-rc0"
-
 [libraries]
-kotlin-logging = { module = "io.github.oshai:kotlin-logging", version.ref = "kotlin-logging" }
+kotlin-logging = { module = "io.github.oshai:kotlin-logging", version = "8.0.4" }
 # TODO migrade to org.slf4j:slf4j-scoped-mdc
-scoped-mdc = { module = "ch.qos.logback:logback-scoped-mdc", version.ref = "scoped-mdc" }
+#scoped-mdc = { module = "ch.qos.logback:logback-scoped-mdc", version = "1.0.0-rc0" }
 
 spring-cloud-bom = {module="org.springframework.cloud:spring-cloud-dependencies", version.ref="spring-cloud"}
 
