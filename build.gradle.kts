@@ -36,12 +36,11 @@ dependencies {
 
 	implementation(libs.kotlin.logging)
 	implementation(libs.scoped.mdc)
-	implementation("io.r2dbc:r2dbc-pool")
 
 	runtimeOnly("io.micrometer:micrometer-registry-prometheus")
-//	runtimeOnly("org.postgresql:postgresql")
-//	runtimeOnly("org.postgresql:r2dbc-postgresql")
-	implementation("org.postgresql:r2dbc-postgresql")
+	runtimeOnly("org.postgresql:postgresql")
+	runtimeOnly("org.postgresql:r2dbc-postgresql")
+	runtimeOnly("io.r2dbc:r2dbc-pool")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-actuator-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-jooq-test")

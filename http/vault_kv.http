@@ -14,7 +14,7 @@ POST {{host}}/v1/secret/data/myapp
 X-Vault-Token: {{token}}
 Content-Type: application/json
 
-{"data": {"username": "pguser", "password": "pgpass"}}
+{"data": {"username": "pguser", "password": "pgpass", "ttl": 999999}}
 
 ### List data
 GET {{host}}/v1/secret/metadata?list=true

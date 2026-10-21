@@ -1,39 +1,52 @@
 package com.example.demo.vault.vault
 
-import io.r2dbc.spi.ConnectionFactory
+import com.example.demo.vault.vault.providers.CachedCredentialsProvider
+import com.example.demo.vault.vault.providers.CredentialsProvider
+import com.example.demo.vault.vault.providers.UpdatableCredentialsProvider
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.r2dbc.spi.ConnectionFactoryOptions
+import io.r2dbc.spi.Option
+import org.springframework.boot.actuate.autoconfigure.endpoint.condition.ConditionalOnAvailableEndpoint
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty
-import org.springframework.boot.r2dbc.autoconfigure.R2dbcProperties
+import org.springframework.boot.r2dbc.autoconfigure.ConnectionFactoryOptionsBuilderCustomizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Primary
-import reactor.core.publisher.Mono
+import java.util.function.Supplier
+
+private val log = KotlinLogging.logger {}
 
 @Configuration
 @ConditionalOnBooleanProperty("vault.enabled")
-class DemoVaultConfig(
-    private val vaultProperties: DemoVaultProperties,
-) {
+class DemoVaultConfig {
     @Bean
-    fun demoVaultClient(): DemoVaultClient {
+    fun demoVaultClient(vaultProperties: DemoVaultProperties): DemoVaultClient {
         return DemoVaultClient(vaultProperties)
     }
 
     @Bean
-    fun credentialsProvider(connectionFactory: ConnectionFactory): CredentialsProvider {
-        return CredentialsProvider(demoVaultClient().getData().data)
+    fun credentialsProvider(vaultClient: DemoVaultClient): CachedCredentialsProvider {
+        return CachedCredentialsProvider { vaultClient.getCredentials() }
     }
 
     @Bean
-    @Primary
-    fun connectionFactory(properties: R2dbcProperties): ConnectionFactory {
-        return RotatingConnectionFactory(properties, credentialsProvider())
+    fun credentialsProviderConnectionFactoryOptionsBuilderCustomizer(
+        credentialsProvider: CredentialsProvider,
+    ): ConnectionFactoryOptionsBuilderCustomizer {
+        return ConnectionFactoryOptionsBuilderCustomizer { builder ->
+            builder.option(
+                Option.valueOf(ConnectionFactoryOptions.USER.name()),
+                Supplier { credentialsProvider.getCredentials().username },
+            ).option(
+                Option.sensitiveValueOf(ConnectionFactoryOptions.PASSWORD.name()),
+                Supplier { credentialsProvider.getCredentials().password },
+            )
+        }
     }
 
-    private fun fetchFreshUsername(): Mono<String> {
-        return Mono.fromCallable { credentialsProvider().getCredentials().username }
-    }
-
-    private fun fetchFreshPassword(): Mono<CharSequence> {
-        return Mono.fromCallable { credentialsProvider().getCredentials().password }
+    @Bean
+    @ConditionalOnAvailableEndpoint
+    @ConditionalOnBooleanProperty("management.endpoint.vault.enabled")
+    fun vaultEndpoint(credentialsProvider: UpdatableCredentialsProvider): DemoVaultEndpoint {
+        return DemoVaultEndpoint(credentialsProvider)
     }
 }

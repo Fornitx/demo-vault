@@ -1,45 +1,19 @@
 management:
-  endpoints:
-    web:
-      exposure:
-        include: '*'
+  endpoints.web.exposure.include: '*'
   endpoint:
-    configprops:
-      show-values: always
-    env:
-      show-values: always
-    health:
-      show-details: always
+    configprops.show-values: always
+    env.show-values: always
+    health.show-details: always
+    vault.enabled: true
   info:
-    env:
-      enabled: true
-    java:
-      enabled: true
-    os:
-      enabled: true
-    process:
-      enabled: true
+    env.enabled: true
+    java.enabled: true
+    os.enabled: true
+    process.enabled: true
 
 spring:
-  application:
-    name: demo-vault
-#  cloud:
-#    vault:
-#      uri: http://localhost:8200
-#      scheme: http
-#      fail-fast: true
-#
-#      authentication: token
-#      token: 00000000-0000-0000-0000-000000000000
-#
-#      kv:
-#        enabled: true
-#        backend: secret
-#  config:
-#    import:
-#      - vault://secret/myapp
-  jooq:
-    sql-dialect: postgres
+  application.name: demo-vault
+  jooq.sql-dialect: postgres
 #  datasource:
 #    url: jdbc:postgresql://localhost:5432/pgdb
 #    username: pguser
@@ -47,20 +21,19 @@ spring:
   r2dbc:
     url: r2dbc:postgresql:failover://localhost:5432,localhost:5433/pgdb
     pool:
+      enabled: false
       validation-query: select 1
-      initial-size: 2
-      max-size: 10
+      initial-size: 0
+      max-size: 5
       max-idle-time: 1m
       max-life-time: 10m
-    username: pguser
-    password: pgpass
-  threads:
-    virtual:
-      enabled: true
+  task.scheduling.pool.size: 5
+  threads.virtual.enabled: true
 
 logging:
-  pattern:
-    dateformat: HH:mm:ss.SSS
+  pattern.dateformat: HH:mm:ss.SSS
+  level:
+    com.example: debug
 
 vault:
   enabled: true

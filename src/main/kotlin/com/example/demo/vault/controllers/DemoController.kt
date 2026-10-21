@@ -6,10 +6,10 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Mono
 
+private val log = KotlinLogging.logger {}
+
 @RestController
 class DemoController(private val service: DemoService) {
-    private val log = KotlinLogging.logger {}
-
     @GetMapping("/foo")
     fun getFoo(): Mono<String> {
         log.info { "GET /foo" }
