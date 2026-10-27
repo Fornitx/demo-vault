@@ -2,6 +2,8 @@ package com.example.demo.vault.vault.test
 
 import com.example.demo.vault.vault.data.Credentials
 import com.example.demo.vault.vault.providers.CachedCredentialsProvider
+import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
 import java.lang.invoke.MethodHandle
 import java.lang.invoke.MethodHandles
@@ -20,7 +22,7 @@ class DemoVaultStarterService(private val credentialsProvider: CachedCredentials
         MethodType.methodType(Void.TYPE, Credentials::class.java)
     )
 
-//    @EventListener(ApplicationReadyEvent::class)
+    @EventListener(ApplicationReadyEvent::class)
     fun onApplicationReady() {
         thread(start = true) {
             TimeUnit.SECONDS.sleep(10)

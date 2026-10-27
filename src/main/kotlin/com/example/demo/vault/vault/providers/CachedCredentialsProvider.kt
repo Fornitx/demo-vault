@@ -13,8 +13,12 @@ private const val THREAD_NAME = "demo-vault-daemon-thread"
 
 private val log = KotlinLogging.logger {}
 
-class CachedCredentialsProvider(private val delegate: CredentialsProvider) : UpdatableCredentialsProvider {
+class CachedCredentialsProvider(
+    private val delegate: CredentialsProvider,
+) : UpdatableCredentialsProvider, ListenableCredentialsProvider {
     private val credentialsRef = AtomicReference<Credentials>()
+
+    private val credentialsListeners = ArrayList<CredentialsListener>()
 
     private val scheduledExecutorService: ScheduledExecutorService =
         Executors.newSingleThreadScheduledExecutor { runnable ->
@@ -30,6 +34,10 @@ class CachedCredentialsProvider(private val delegate: CredentialsProvider) : Upd
         return credentialsRef.get()
     }
 
+    override fun addCredentialsListener(credentialsListener: CredentialsListener) {
+        credentialsListeners += credentialsListener
+    }
+
     override fun update() {
         log.debug { "Cached credentials update" }
         val currentCreds = credentialsRef.get()
@@ -41,11 +49,16 @@ class CachedCredentialsProvider(private val delegate: CredentialsProvider) : Upd
 
     fun setCredentials(credentials: Credentials) {
         log.debug { "Setting credentials: $credentials" }
-        credentialsRef.set(credentials)
 
         if (Thread.currentThread().name != THREAD_NAME) {
             log.debug { "Cancel future from thread ${Thread.currentThread().name}" }
             future?.cancel(true)
+        }
+
+        credentialsRef.set(credentials)
+
+        for (listener in credentialsListeners) {
+            listener.credentialsChanged(credentials)
         }
 
         val delay = max(10, credentials.ttl)

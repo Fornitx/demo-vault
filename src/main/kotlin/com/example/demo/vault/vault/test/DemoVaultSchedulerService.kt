@@ -12,8 +12,7 @@ private val log = KotlinLogging.logger {}
 class DemoVaultSchedulerService(private val demoDao: DemoDao) {
     @Scheduled(fixedDelay = 5_000)
     fun pollDb() {
-        demoDao.getFooRaw().doOnNext {
-            log.info { "DemoDao getFooRaw(): $it" }
-        }.block()
+        val string = demoDao.getFooJdbc()
+        log.info { "DemoDao getFooJdbc(): $string" }
     }
 }

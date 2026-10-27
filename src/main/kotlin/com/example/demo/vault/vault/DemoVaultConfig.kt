@@ -2,26 +2,21 @@ package com.example.demo.vault.vault
 
 import com.example.demo.vault.vault.providers.CachedCredentialsProvider
 import com.example.demo.vault.vault.providers.CredentialsProvider
+import com.example.demo.vault.vault.providers.ListenableCredentialsProvider
 import com.example.demo.vault.vault.providers.UpdatableCredentialsProvider
+import com.zaxxer.hikari.HikariDataSource
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.r2dbc.spi.ConnectionFactoryOptions
-import io.r2dbc.spi.Option
-import org.quartz.Calendar
-import org.quartz.JobDetail
-import org.quartz.Trigger
-import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.actuate.autoconfigure.endpoint.condition.ConditionalOnAvailableEndpoint
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty
-import org.springframework.boot.quartz.autoconfigure.QuartzProperties
-import org.springframework.boot.quartz.autoconfigure.SchedulerFactoryBeanCustomizer
-import org.springframework.boot.r2dbc.autoconfigure.ConnectionFactoryOptionsBuilderCustomizer
-import org.springframework.context.ApplicationContext
+import org.springframework.boot.jdbc.DataSourceBuilder
+import org.springframework.boot.jdbc.autoconfigure.DataSourceProperties
+import org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.scheduling.quartz.SchedulerFactoryBean
-import org.springframework.scheduling.quartz.SpringBeanJobFactory
-import java.util.*
-import java.util.function.Supplier
+import org.springframework.core.env.Environment
+import org.springframework.jdbc.datasource.SimpleDriverDataSource
+import org.springframework.util.StringUtils
+import javax.sql.DataSource
 
 private val log = KotlinLogging.logger {}
 
@@ -39,55 +34,69 @@ class DemoVaultConfig {
     }
 
     @Bean
-    fun credentialsProviderConnectionFactoryOptionsBuilderCustomizer(
+    fun jdbcConnectionDetails(
+        properties: DataSourceProperties,
         credentialsProvider: CredentialsProvider,
-    ): ConnectionFactoryOptionsBuilderCustomizer {
-        return ConnectionFactoryOptionsBuilderCustomizer { builder ->
-            builder.option(
-                Option.valueOf(ConnectionFactoryOptions.USER.name()),
-                Supplier { credentialsProvider.getCredentials().username },
-            ).option(
-                Option.sensitiveValueOf(ConnectionFactoryOptions.PASSWORD.name()),
-                Supplier { credentialsProvider.getCredentials().password },
-            )
+    ): JdbcConnectionDetails {
+        return object : JdbcConnectionDetails {
+            override fun getUsername(): String = credentialsProvider.getCredentials().username
+
+            override fun getPassword(): String = credentialsProvider.getCredentials().password
+
+            override fun getJdbcUrl(): String = properties.url!!
         }
     }
 
     @Bean
-    fun quartzScheduler(
-        properties: QuartzProperties,
-        customizers: ObjectProvider<SchedulerFactoryBeanCustomizer>,
-        jobDetails: ObjectProvider<JobDetail>,
-        calendars: MutableMap<String, Calendar>,
-        triggers: ObjectProvider<Trigger>,
-        applicationContext: ApplicationContext,
-        credentialsProvider: CredentialsProvider,
-    ): SchedulerFactoryBean {
-        val schedulerFactoryBean = SchedulerFactoryBean()
-        val jobFactory = SpringBeanJobFactory()
-        jobFactory.setApplicationContext(applicationContext)
-        schedulerFactoryBean.setJobFactory(jobFactory)
-        if (properties.schedulerName != null) {
-            schedulerFactoryBean.setSchedulerName(properties.schedulerName!!)
-        }
-        schedulerFactoryBean.isAutoStartup = properties.isAutoStartup
-        schedulerFactoryBean.setStartupDelay(properties.startupDelay.seconds.toInt())
-        schedulerFactoryBean.setWaitForJobsToCompleteOnShutdown(properties.isWaitForJobsToCompleteOnShutdown)
-        schedulerFactoryBean.setOverwriteExistingJobs(properties.isOverwriteExistingJobs)
-        if (properties.properties.isNotEmpty()) {
-            val quartzProperties = asProperties(properties.properties)
+    fun dataSource(
+        properties: DataSourceProperties,
+        connectionDetails: JdbcConnectionDetails,
+        environment: Environment,
+        credentialsProvider: ListenableCredentialsProvider,
+    ): DataSource {
+        val dataSourceClassName = environment.getProperty("spring.datasource.hikari.data-source-class-name")
+        val dataSource = createDataSource<DataSource>(
+            connectionDetails,
+            properties.type,
+            properties.classLoader,
+            dataSourceClassName == null,
+        )
 
-            val credentials = credentialsProvider.getCredentials()
-            quartzProperties["org.quartz.dataSource.quartzDataSource.user"] = credentials.username
-            quartzProperties["org.quartz.dataSource.quartzDataSource.password"] = credentials.password
+        when (dataSource) {
+            is HikariDataSource -> {
+                if (StringUtils.hasText(properties.name)) {
+                    dataSource.setPoolName(properties.name)
+                }
+                credentialsProvider.addCredentialsListener { credentials ->
+                    dataSource.password = credentials.password
+                    dataSource.hikariPoolMXBean.softEvictConnections()
+                }
+            }
 
-            schedulerFactoryBean.setQuartzProperties(quartzProperties)
+            is SimpleDriverDataSource -> {
+                credentialsProvider.addCredentialsListener { credentials ->
+                    dataSource.password = credentials.password
+                }
+            }
         }
-        schedulerFactoryBean.setJobDetails(*jobDetails.orderedStream().toArray { arrayOfNulls(it) })
-        schedulerFactoryBean.setCalendars(calendars)
-        schedulerFactoryBean.setTriggers(*triggers.orderedStream().toArray { arrayOfNulls(it) })
-        customizers.orderedStream().forEach { it.customize(schedulerFactoryBean) }
-        return schedulerFactoryBean
+
+        return dataSource
+    }
+
+    private fun <T : DataSource> createDataSource(
+        connectionDetails: JdbcConnectionDetails,
+        type: Class<out DataSource>?,
+        classLoader: ClassLoader,
+        applyDriverClassName: Boolean,
+    ): T {
+        val builder = DataSourceBuilder.create(classLoader).type(type)
+        if (applyDriverClassName) {
+            builder.driverClassName(connectionDetails.getDriverClassName())
+        }
+        return builder.url(connectionDetails.jdbcUrl)
+            .username(connectionDetails.username)
+            .password(connectionDetails.password)
+            .build() as T
     }
 
     @Bean
@@ -95,11 +104,5 @@ class DemoVaultConfig {
     @ConditionalOnBooleanProperty("management.endpoint.vault.enabled")
     fun vaultEndpoint(credentialsProvider: UpdatableCredentialsProvider): DemoVaultEndpoint {
         return DemoVaultEndpoint(credentialsProvider)
-    }
-
-    private fun asProperties(source: MutableMap<String, String>): Properties {
-        val properties = Properties()
-        properties.putAll(source)
-        return properties
     }
 }

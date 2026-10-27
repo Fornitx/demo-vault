@@ -6,7 +6,7 @@ kotlin-logging = { module = "io.github.oshai:kotlin-logging", version = "8.0.4" 
 # TODO migrade to org.slf4j:slf4j-scoped-mdc
 #scoped-mdc = { module = "ch.qos.logback:logback-scoped-mdc", version = "1.0.0-rc0" }
 
-spring-cloud-bom = {module="org.springframework.cloud:spring-cloud-dependencies", version.ref="spring-cloud"}
+spring-cloud-bom = { module = "org.springframework.cloud:spring-cloud-dependencies", version.ref = "spring-cloud" }
 
 [plugins]
 mockito = { id = "com.bakdata.mockito", version = "2.2.1" }

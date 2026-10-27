@@ -14,39 +14,40 @@ management:
 spring:
   application.name: demo-vault
   jooq.sql-dialect: postgres
-#  datasource:
-#    url: jdbc:postgresql://localhost:5432/pgdb
-#    username: pguser
+  datasource:
+#    type: org.springframework.jdbc.datasource.SimpleDriverDataSource
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432,localhost:5433/pgdb
+  #    username: pguser
 #    password: pgpass
-  r2dbc:
-    url: r2dbc:postgresql:failover://localhost:5432,localhost:5433/pgdb
-    pool:
-      enabled: false
-      validation-query: select 1
-      initial-size: 0
-      max-size: 5
-      max-idle-time: 1m
-      max-life-time: 10m
+
+  #  r2dbc:
+#    url: r2dbc:postgresql:failover://localhost:5432,localhost:5433/pgdb
+#    pool:
+#      enabled: false
+#      validation-query: select 1
+#      initial-size: 0
+#      max-size: 5
+#      max-idle-time: 1m
+#      max-life-time: 10m
   quartz:
     auto-startup: true
     job-store-type: jdbc
     jdbc:
-      initialize-schema: always
+      initialize-schema: never
     overwrite-existing-jobs: true
     properties:
       org.quartz:
-        dataSource:
-          quartzDataSource:
-            driver: org.postgresql.Driver
+#        dataSource:
+#          quartzDataSource:
+#            driver: org.postgresql.Driver
 #            URL: jdbc:postgresql://localhost:5432,localhost:5433/pgdb
-            URL: jdbc:postgresql://localhost:5432/pgdb
-            maxConnections: 4
-            provider: hikaricp
+#            maxConnections: 4
+#            provider: hikaricp
         jobStore:
           class: org.quartz.impl.jdbcjobstore.JobStoreTX
           driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
-#          isClustered: true
-          dataSource: quartzDataSource
+          isClustered: true
         scheduler:
           instanceId: AUTO
           instanceName: Demo
@@ -66,4 +67,4 @@ vault:
   token: 00000000-0000-0000-0000-000000000000
   path: secret/data/myapp
 
-debug: true
+#debug: true
