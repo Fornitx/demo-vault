@@ -22,7 +22,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-jooq") {
         exclude(group = "io.r2dbc")
     }
-//	implementation("org.springframework.boot:spring-boot-starter-quartz")
+	implementation("org.springframework.boot:spring-boot-starter-quartz")
 //	implementation("org.springframework.boot:spring-boot-starter-r2dbc")
 //	implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
@@ -49,7 +49,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-jooq-test") {
         exclude(group = "io.r2dbc")
     }
-//	testImplementation("org.springframework.boot:spring-boot-starter-quartz-test")
+	testImplementation("org.springframework.boot:spring-boot-starter-quartz-test")
 //	testImplementation("org.springframework.boot:spring-boot-starter-r2dbc-test")
 //	testImplementation("org.springframework.boot:spring-boot-starter-validation-test")
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")

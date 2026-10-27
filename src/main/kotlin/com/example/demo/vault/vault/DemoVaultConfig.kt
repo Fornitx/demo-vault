@@ -48,6 +48,7 @@ class DemoVaultConfig {
     }
 
     @Bean
+//    @QuartzDataSource
     fun dataSource(
         properties: DataSourceProperties,
         connectionDetails: JdbcConnectionDetails,
